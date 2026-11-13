@@ -1,7 +1,14 @@
 import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { IndexedDbRollRepository } from './IndexedDbRollRepository.ts'
-import { InvalidFrameError, RollFinishedError, RollNotFoundError, type NewFrame } from './types.ts'
+import {
+  FrameNotFoundError,
+  InvalidFrameError,
+  InvalidTextError,
+  RollFinishedError,
+  RollNotFoundError,
+  type NewFrame,
+} from './types.ts'
 
 let repo: IndexedDbRollRepository
 let dbCounter = 0
@@ -119,5 +126,51 @@ describe('IndexedDbRollRepository', () => {
     const reopened = new IndexedDbRollRepository(prefix)
     expect((await reopened.getRoll(roll.id))?.shotsLeft).toBe(23)
     expect(await reopened.listFrames(roll.id)).toHaveLength(1)
+  })
+
+  it('creates a pack with a trimmed title, and renames or clears it', async () => {
+    const pack = await repo.createRoll({ stockId: 'daybreak-instant', exposures: 10, title: '  Kyoto  ' })
+    expect(pack.title).toBe('Kyoto')
+
+    const renamed = await repo.renameRoll(pack.id, 'Kyoto, day 2')
+    expect(renamed.title).toBe('Kyoto, day 2')
+    expect((await repo.getRoll(pack.id))?.title).toBe('Kyoto, day 2')
+
+    await repo.renameRoll(pack.id, '   ')
+    expect((await repo.getRoll(pack.id))?.title).toBeUndefined()
+  })
+
+  it('rejects overlong titles and renaming an unknown roll', async () => {
+    const pack = await repo.createRoll({ stockId: 'daybreak-instant', exposures: 10 })
+    await expect(repo.renameRoll(pack.id, 'x'.repeat(41))).rejects.toBeInstanceOf(InvalidTextError)
+    await expect(repo.renameRoll('missing', 'x')).rejects.toBeInstanceOf(RollNotFoundError)
+  })
+
+  it('writes, rewrites and clears a caption without touching the image', async () => {
+    const pack = await repo.createRoll({ stockId: 'daybreak-instant', exposures: 10 })
+    await repo.claimShot(pack.id)
+    await repo.saveFrame(frameInput(pack.id, 1, 'daybreak-instant'))
+
+    await repo.updateCaption(pack.id, 1, 'first light')
+    let [frame] = await repo.listFrames(pack.id)
+    expect(frame.caption).toBe('first light')
+    expect(await frame.image.text()).toBe('full-1')
+
+    await repo.updateCaption(pack.id, 1, 'golden hour')
+    ;[frame] = await repo.listFrames(pack.id)
+    expect(frame.caption).toBe('golden hour')
+
+    await repo.updateCaption(pack.id, 1, '')
+    ;[frame] = await repo.listFrames(pack.id)
+    expect(frame.caption).toBeUndefined()
+  })
+
+  it('rejects captions for missing frames and overlong captions', async () => {
+    const pack = await repo.createRoll({ stockId: 'daybreak-instant', exposures: 10 })
+    await expect(repo.updateCaption(pack.id, 1, 'hi')).rejects.toBeInstanceOf(FrameNotFoundError)
+
+    await repo.claimShot(pack.id)
+    await repo.saveFrame(frameInput(pack.id, 1, 'daybreak-instant'))
+    await expect(repo.updateCaption(pack.id, 1, 'x'.repeat(61))).rejects.toBeInstanceOf(InvalidTextError)
   })
 })

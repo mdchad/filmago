@@ -136,20 +136,9 @@ h2 {
 
 .wordmark-model {
   font-family: var(--mono);
+  text-transform: uppercase;
   font-size: 10px;
   letter-spacing: 0.3em;
-}
-
-.eyepiece {
-  width: 58px;
-  height: 36px;
-  border-radius: 9px;
-  background: radial-gradient(ellipse at 32% 28%, #5b6b78 0, #16202a 45%, #050607 100%);
-  box-shadow:
-    inset 0 2px 5px rgb(0 0 0 / 0.85),
-    0 0 0 4px #262624,
-    0 0 0 5px #9e9f9b,
-    0 2px 4px 5px rgb(0 0 0 / 0.25);
 }
 
 .frame-counter {
@@ -901,6 +890,414 @@ button.film-window {
   object-fit: contain;
 }
 
+/* ---------- format switch ---------- */
+
+.format-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: none;
+  width: 132px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.16);
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 0.45),
+    0 1px 0 rgb(255 255 255 / 0.6);
+}
+
+.format-switch a {
+  position: relative;
+  z-index: 1;
+  padding: 7px 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #5d5e5a;
+}
+
+.format-switch a[aria-current='page'] {
+  color: #1c1c1a;
+}
+
+.format-switch-knob {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff, #d2d3cf);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.45),
+    inset 0 -1px 0 rgb(0 0 0 / 0.15);
+}
+
+.format-switch[data-current='instant'] .format-switch-knob {
+  translate: 100% 0;
+}
+
+/* ---------- instant camera body ---------- */
+
+.instant-body {
+  background: #2c2a27;
+}
+
+/* Cream plastic instead of brushed chrome. */
+.instant-body .top-plate {
+  background: linear-gradient(180deg, #f8f4ea, #ebe4d4 60%, #dbd2bf);
+  box-shadow:
+    inset 0 -1px 0 #b8ae99,
+    0 3px 6px rgb(0 0 0 / 0.45);
+}
+
+.instant-body .engraved {
+  color: #6c6354;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.75);
+}
+
+/* Fine-stippled charcoal plastic: no leather, no stitching. */
+.instant-panel {
+  background: linear-gradient(rgb(44 42 39 / 0.6) 0 0), var(--leather-texture), #2c2a27;
+  background-blend-mode: normal, soft-light;
+}
+
+.instant-panel::before {
+  content: none;
+}
+
+.instant-panel .control-deck {
+  margin-top: auto;
+}
+
+.square-bezel {
+  flex: none;
+  align-self: center;
+  width: min(100%, calc(100dvh - 400px));
+  aspect-ratio: 1;
+}
+
+/* ---------- prints ---------- */
+
+/* A white instant print; sized by --print-w, proportions match printLayout(). */
+.print {
+  --print-w: 200px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: var(--print-w);
+  aspect-ratio: 88 / 107;
+  margin: 0;
+  padding: calc(var(--print-w) * 6 / 88) calc(var(--print-w) * 4.5 / 88) 0;
+  border: 0;
+  border-radius: 2px;
+  background: linear-gradient(160deg, #fbf9f4, #eeeadf);
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 0.15),
+    0 8px 18px rgb(0 0 0 / 0.35);
+  color: #1f2230;
+  text-align: center;
+}
+
+.print-image {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #16171a;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+}
+
+.print-image img,
+.print-image canvas {
+  /* Absolutely placed so a canvas's pixel size can't stretch the card. */
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.print-caption {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0 4%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: 'Permanent Marker', 'Marker Felt', cursive;
+  font-size: calc(var(--print-w) * 0.067);
+  transform: rotate(-1.2deg);
+}
+
+.print-slot-area {
+  position: relative;
+  z-index: 5;
+  margin-top: 12px;
+}
+
+.print-slot {
+  height: 7px;
+  margin: 0 14%;
+  border-radius: 4px;
+  background: #050505;
+  box-shadow:
+    inset 0 2px 3px #000,
+    0 1px 0 rgb(255 255 255 / 0.1);
+}
+
+/* The print emerges from behind the slot, so everything above it is clipped. */
+.print-exit {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  right: 0;
+  height: 70dvh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ejected-print {
+  --print-w: min(240px, 62vw);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Idle: tucked away. Coming from 'holding', this animates the toss onto the pile. */
+.ejected-print[data-phase='idle'] {
+  opacity: 0;
+  transform: translate(-75%, 45%) rotate(-18deg) scale(0.35);
+  transition:
+    transform 550ms cubic-bezier(0.5, 0, 0.75, 0.4),
+    opacity 550ms ease-in;
+  pointer-events: none;
+}
+
+.ejected-print[data-phase='developing'] {
+  opacity: 1;
+  animation: eject 1500ms cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+.ejected-print[data-phase='holding'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* A motor pushing the print out in two pulls. */
+@keyframes eject {
+  0% {
+    transform: translateY(-102%);
+  }
+  38% {
+    transform: translateY(-56%);
+  }
+  46% {
+    transform: translateY(-54%);
+  }
+  82% {
+    transform: translateY(-6%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* ---------- prints page: a table of loosely stacked packs ---------- */
+
+.prints-board {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  overflow-y: auto;
+  padding: calc(16px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom));
+  color: #f6f0e2;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(255 226 180 / 0.18), transparent 60%),
+    repeating-linear-gradient(91deg, rgb(0 0 0 / 0.06) 0 2px, transparent 2px 11px),
+    linear-gradient(180deg, #5d4029, #47301f);
+}
+
+.prints-board .text-button {
+  color: #f6c87c;
+}
+
+.prints-board .empty-text {
+  color: rgb(246 240 226 / 0.7);
+}
+
+.pack-stack {
+  margin-top: 26px;
+}
+
+.pack-stack-header {
+  display: grid;
+  gap: 2px;
+}
+
+.pack-stack-header small {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: rgb(246 240 226 / 0.65);
+}
+
+.pack-title {
+  width: 100%;
+  padding: 4px 0;
+  border: 0;
+  border-bottom: 1px dashed rgb(255 255 255 / 0.22);
+  background: transparent;
+  color: #fbf6ea;
+  font-family: 'Permanent Marker', 'Marker Felt', cursive;
+  font-size: 22px;
+  outline: none;
+}
+
+.pack-title::placeholder {
+  color: rgb(251 246 234 / 0.4);
+}
+
+.pack-title:focus {
+  border-bottom-color: #f6c87c;
+}
+
+.pack-prints {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 14px 0 0;
+  padding: 10px 18px 26px 4px;
+  list-style: none;
+}
+
+.pack-prints li {
+  --print-w: 118px;
+  margin: 0 -16px -18px 0;
+  transform: translate(var(--shift-x), var(--shift-y)) rotate(var(--tilt));
+}
+
+.print-button {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  transition: transform 120ms ease-out;
+}
+
+.print-button:active {
+  transform: scale(0.97);
+}
+
+.print-button .print {
+  --print-w: inherit;
+}
+
+.print-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 20px;
+  padding: calc(20px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+}
+
+.print-viewer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(22 15 10 / 0.84);
+  backdrop-filter: blur(4px);
+}
+
+.print-large {
+  --print-w: min(86vw, 420px, calc(62dvh * 88 / 107));
+  position: relative;
+  z-index: 1;
+}
+
+.print-caption-input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #1f2230;
+  text-align: center;
+  outline: none;
+}
+
+.print-caption-input::placeholder {
+  color: rgb(31 34 48 / 0.35);
+}
+
+.print-viewer-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.print-viewer .text-button {
+  color: #f6c87c;
+}
+
+.print-viewer .error-text {
+  position: absolute;
+  bottom: -28px;
+  left: 0;
+  right: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  transform: none;
+}
+
+/* Instant pack in the picker: a flat cartridge with the stock's stripe. */
+.pack {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 50px;
+  padding-bottom: 8px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #2d2c2a, #141312);
+  color: #f4f0e6;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow:
+    0 4px 8px rgb(0 0 0 / 0.5),
+    inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+
+.pack::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 10px;
+  right: 10px;
+  height: 3px;
+  border-radius: 2px;
+  background: #000;
+}
+
+.pack::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 9px;
+  background: var(--canister);
+}
+
 /* ---------- unsupported ---------- */
 
 .notice-screen {
@@ -943,9 +1340,8 @@ button.film-window {
 
 .tune-toggle {
   position: fixed;
-  left: 50%;
-  translate: -50% 0;
-  top: calc(18px + env(safe-area-inset-top));
+  left: 8px;
+  bottom: calc(6px + env(safe-area-inset-bottom));
   z-index: 10;
   padding: 6px 12px;
   border: 1px dashed var(--amber);
@@ -1049,8 +1445,13 @@ button.film-window {
 @media (prefers-reduced-motion: reduce) {
   .sheet,
   button.film-window,
-  .osd-developing {
+  .osd-developing,
+  .ejected-print[data-phase='developing'] {
     animation: none;
+  }
+
+  .ejected-print[data-phase='idle'] {
+    transition: none;
   }
 
   .counter-strip {

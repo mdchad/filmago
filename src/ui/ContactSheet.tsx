@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getStock } from '../film/index.ts'
-import { useRollStore } from '../roll/rollStore.ts'
+import { useShallow } from 'zustand/react/shallow'
+import { selectRollsOfFormat, useRollStore } from '../roll/rollStore.ts'
 import type { Frame, Roll } from '../roll/types.ts'
 import { useObjectUrl } from './useObjectUrl.ts'
 
@@ -52,7 +53,7 @@ function FrameViewer({ frame, onClose }: { frame: Frame; onClose(): void }) {
 }
 
 export function ContactSheet({ initialRollId, onClose }: { initialRollId: string | undefined; onClose(): void }) {
-  const rolls = useRollStore((s) => s.rolls)
+  const rolls = useRollStore(useShallow(selectRollsOfFormat('35mm')))
   const framesByRoll = useRollStore((s) => s.framesByRoll)
   const loadFrames = useRollStore((s) => s.loadFrames)
   const [rollId, setRollId] = useState(initialRollId ?? rolls[0]?.id)

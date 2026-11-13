@@ -1,19 +1,25 @@
 import { describe, expect, it } from 'vitest'
 import { evaluateCurve } from './curves.ts'
-import { FILM_STOCKS, getStock } from './stocks.ts'
+import { FILM_STOCKS, getStock, stocksForFormat } from './stocks.ts'
 
 describe('film stocks', () => {
-  it('ships three stocks with unique ids', () => {
-    expect(FILM_STOCKS).toHaveLength(3)
+  it('ships three 35mm stocks and two instant stocks, all with unique ids', () => {
+    expect(stocksForFormat('35mm')).toHaveLength(3)
+    expect(stocksForFormat('instant')).toHaveLength(2)
     expect(new Set(FILM_STOCKS.map((s) => s.id)).size).toBe(FILM_STOCKS.length)
   })
 
-  it('includes one monochrome stock', () => {
-    expect(FILM_STOCKS.filter((s) => s.monochrome)).toHaveLength(1)
+  it('offers one monochrome stock per format', () => {
+    expect(stocksForFormat('35mm').filter((s) => s.monochrome)).toHaveLength(1)
+    expect(stocksForFormat('instant').filter((s) => s.monochrome)).toHaveLength(1)
+  })
+
+  it('sizes rolls and packs by format', () => {
+    for (const s of stocksForFormat('35mm')) expect([24, 36]).toContain(s.exposures)
+    for (const s of stocksForFormat('instant')) expect(s.exposures).toBe(10)
   })
 
   it.each(FILM_STOCKS)('$name has well-formed parameters', (stock) => {
-    expect([24, 36]).toContain(stock.exposures)
     expect(stock.iso).toBeGreaterThan(0)
     expect(stock.colorMatrix).toHaveLength(9)
     expect(stock.colorMatrix.every(Number.isFinite)).toBe(true)
@@ -37,8 +43,7 @@ describe('film stocks', () => {
     expect(stock.vignette).toBeLessThanOrEqual(1)
   })
 
-  it('gives the monochrome stock identical matrix rows', () => {
-    const mono = FILM_STOCKS.find((s) => s.monochrome)!
+  it.each(FILM_STOCKS.filter((s) => s.monochrome))('$name has identical matrix rows', (mono) => {
     const [r, g, b] = [0, 3, 6].map((i) => mono.colorMatrix.slice(i, i + 3))
     expect(g).toEqual(r)
     expect(b).toEqual(r)

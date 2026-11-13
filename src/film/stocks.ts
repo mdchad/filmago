@@ -1,9 +1,10 @@
-import type { FilmStock } from './types.ts'
+import type { FilmFormat, FilmStock } from './types.ts'
 
 /** Warm, forgiving portrait color negative: soft contrast, gentle highlight rolloff. */
 export const marigold400: FilmStock = {
   id: 'marigold-400',
   name: 'Marigold 400',
+  format: '35mm',
   iso: 400,
   exposures: 36,
   colorMatrix: [
@@ -26,6 +27,7 @@ export const marigold400: FilmStock = {
 export const ironside400: FilmStock = {
   id: 'ironside-400',
   name: 'Ironside 400',
+  format: '35mm',
   iso: 400,
   exposures: 36,
   // Identical rows: a panchromatic response with a slight red-filter bias.
@@ -49,6 +51,7 @@ export const ironside400: FilmStock = {
 export const sodium500t: FilmStock = {
   id: 'sodium-500t',
   name: 'Sodium 500T',
+  format: '35mm',
   iso: 500,
   exposures: 24,
   colorMatrix: [
@@ -67,7 +70,64 @@ export const sodium500t: FilmStock = {
   monochrome: false,
 }
 
-export const FILM_STOCKS: readonly FilmStock[] = [marigold400, ironside400, sodium500t]
+/**
+ * Instant color: soft contrast, cool cyan shadows, creamy warm highlights,
+ * gently muted color. Fine grain and almost no halation.
+ */
+export const daybreakInstant: FilmStock = {
+  id: 'daybreak-instant',
+  name: 'Daybreak Instant',
+  format: 'instant',
+  iso: 640,
+  exposures: 10,
+  colorMatrix: [
+    0.9, 0.1, 0.0,
+    0.04, 0.88, 0.08,
+    0.02, 0.1, 0.88,
+  ],
+  curves: {
+    r: [0.08, 0.27, 0.55, 0.82, 0.96],
+    g: [0.11, 0.3, 0.55, 0.8, 0.94],
+    b: [0.15, 0.32, 0.53, 0.75, 0.86],
+  },
+  grain: { amount: 0.045, size: 1.2 },
+  halation: { threshold: 0.92, strength: 0.06, tint: [1, 0.85, 0.7] },
+  vignette: 0.4,
+  monochrome: false,
+}
+
+/** Instant black & white: silvery, low contrast, slightly warm paper tone. */
+export const ashenInstant: FilmStock = {
+  id: 'ashen-instant',
+  name: 'Ashen Instant',
+  format: 'instant',
+  iso: 640,
+  exposures: 10,
+  colorMatrix: [
+    0.3, 0.58, 0.12,
+    0.3, 0.58, 0.12,
+    0.3, 0.58, 0.12,
+  ],
+  curves: {
+    r: [0.1, 0.3, 0.56, 0.82, 0.95],
+    g: [0.09, 0.29, 0.55, 0.81, 0.94],
+    b: [0.08, 0.27, 0.52, 0.78, 0.91],
+  },
+  grain: { amount: 0.06, size: 1.3 },
+  halation: { threshold: 0.95, strength: 0.03, tint: [1, 1, 1] },
+  vignette: 0.45,
+  monochrome: true,
+}
+
+export const FILM_STOCKS: readonly FilmStock[] = [
+  marigold400,
+  ironside400,
+  sodium500t,
+  daybreakInstant,
+  ashenInstant,
+]
+
+export const stocksForFormat = (format: FilmFormat) => FILM_STOCKS.filter((s) => s.format === format)
 
 export function getStock(id: string): FilmStock {
   const stock = FILM_STOCKS.find((s) => s.id === id)

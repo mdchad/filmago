@@ -4,11 +4,17 @@
  */
 export type CurvePoints = number[]
 
+/** 35mm rolls end up on a contact sheet; instant packs eject square prints. */
+export type FilmFormat = '35mm' | 'instant'
+
+export type Exposures = 10 | 24 | 36
+
 export type FilmStock = {
   id: string
   name: string
+  format: FilmFormat
   iso: number
-  exposures: 24 | 36
+  exposures: Exposures
   /** Row-major 3x3 matrix applied to RGB before the tone curves. */
   colorMatrix: number[]
   curves: { r: CurvePoints; g: CurvePoints; b: CurvePoints }

@@ -130,7 +130,8 @@ export class CapturedFrame {
 export class FilmRenderer {
   readonly #root: TgpuRoot
   readonly #canvas: HTMLCanvasElement
-  readonly #context: GPUCanvasContext
+  /** Canvas contexts by canvas: the viewfinder, plus e.g. an instant print. */
+  readonly #contexts = new Map<HTMLCanvasElement, GPUCanvasContext>()
   readonly #params
   readonly #sampler
   readonly #pipelines
@@ -141,7 +142,6 @@ export class FilmRenderer {
   constructor(root: TgpuRoot, canvas: HTMLCanvasElement) {
     this.#root = root
     this.#canvas = canvas
-    this.#context = root.configureContext({ canvas, alphaMode: 'opaque' })
     this.#params = createParamsBuffer(root)
     this.#sampler = root.createSampler({
       magFilter: 'linear',
@@ -177,14 +177,14 @@ export class FilmRenderer {
     }
     const live = this.#live
     live.source.write(frame)
-    this.#fitCanvas(width, height)
+    this.#fitCanvas(this.#canvas, width, height)
 
     if (options.fullLook) {
       this.#renderFilm(live, stock, options.seed)
       live.develop.write({ progress: 1 })
-      this.#pipelines.develop.with(live.developGroup).withColorAttachment(this.#canvasAttachment()).draw(3)
+      this.#pipelines.develop.with(live.developGroup).withColorAttachment(this.#canvasAttachment(this.#canvas)).draw(3)
     } else {
-      this.#pipelines.preview.with(live.previewGroup).withColorAttachment(this.#canvasAttachment()).draw(3)
+      this.#pipelines.preview.with(live.previewGroup).withColorAttachment(this.#canvasAttachment(this.#canvas)).draw(3)
     }
   }
 
@@ -198,11 +198,14 @@ export class FilmRenderer {
     return frame
   }
 
-  /** Shows a captured frame on the canvas at the given develop progress (0→1). */
-  drawDevelop(frame: CapturedFrame, progress: number) {
-    this.#fitCanvas(frame.width, frame.height)
+  /**
+   * Shows a captured frame at the given develop progress (0→1), on the
+   * viewfinder or on another canvas such as an instant print.
+   */
+  drawDevelop(frame: CapturedFrame, progress: number, canvas: HTMLCanvasElement = this.#canvas) {
+    this.#fitCanvas(canvas, frame.width, frame.height)
     frame.targets.develop.write({ progress })
-    this.#pipelines.develop.with(frame.targets.developGroup).withColorAttachment(this.#canvasAttachment()).draw(3)
+    this.#pipelines.develop.with(frame.targets.developGroup).withColorAttachment(this.#canvasAttachment(canvas)).draw(3)
   }
 
   /** Reads the finished image back and encodes the full-size JPEG and a thumbnail. */
@@ -258,7 +261,8 @@ export class FilmRenderer {
     for (const frame of this.#captures) frame.targets.destroy()
     this.#captures.clear()
     this.#params.destroy()
-    this.#context.unconfigure()
+    for (const context of this.#contexts.values()) context.unconfigure()
+    this.#contexts.clear()
   }
 
   #renderFilm(targets: FilmTargets, stock: FilmStock, seed: number) {
@@ -270,8 +274,13 @@ export class FilmRenderer {
     film.with(targets.filmGroup).withColorAttachment({ view: targets.output }).draw(3)
   }
 
-  #canvasAttachment() {
-    return { view: this.#context, clearValue: [0, 0, 0, 1] } as const
+  #canvasAttachment(canvas: HTMLCanvasElement) {
+    let context = this.#contexts.get(canvas)
+    if (!context) {
+      context = this.#root.configureContext({ canvas, alphaMode: 'opaque' })
+      this.#contexts.set(canvas, context)
+    }
+    return { view: context, clearValue: [0, 0, 0, 1] } as const
   }
 
   #writeParams(stock: FilmStock, seed: number, width: number, height: number) {
@@ -303,13 +312,13 @@ export class FilmRenderer {
   }
 
   /** Sizes the canvas backing store to the frame's aspect, no larger than needed on screen. */
-  #fitCanvas(width: number, height: number) {
+  #fitCanvas(canvas: HTMLCanvasElement, width: number, height: number) {
     const dpr = window.devicePixelRatio || 1
-    const displayEdge = Math.max(this.#canvas.clientWidth, this.#canvas.clientHeight) * dpr
+    const displayEdge = Math.max(canvas.clientWidth, canvas.clientHeight) * dpr
     const scale = Math.min(1, displayEdge / Math.max(width, height))
     const w = Math.max(1, Math.round(width * scale))
     const h = Math.max(1, Math.round(height * scale))
-    if (this.#canvas.width !== w) this.#canvas.width = w
-    if (this.#canvas.height !== h) this.#canvas.height = h
+    if (canvas.width !== w) canvas.width = w
+    if (canvas.height !== h) canvas.height = h
   }
 }

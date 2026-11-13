@@ -1,7 +1,11 @@
 import { createStore, get, getMany, keys, set, update, values, type UseStore } from 'idb-keyval'
 import type { RollRepository } from './RollRepository.ts'
 import {
+  FrameNotFoundError,
   InvalidFrameError,
+  MAX_CAPTION_LENGTH,
+  MAX_TITLE_LENGTH,
+  normalizeText,
   RollFinishedError,
   RollNotFoundError,
   type ClaimedShot,
@@ -29,18 +33,19 @@ export class IndexedDbRollRepository implements RollRepository {
   readonly #rolls: UseStore
   readonly #frames: UseStore
 
-  constructor(dbPrefix = 'film-roll') {
+  constructor(dbPrefix = 'filmago') {
     this.#rolls = createStore(`${dbPrefix}-rolls`, 'rolls')
     this.#frames = createStore(`${dbPrefix}-frames`, 'frames')
   }
 
-  async createRoll({ stockId, exposures }: NewRoll): Promise<Roll> {
+  async createRoll({ stockId, exposures, title }: NewRoll): Promise<Roll> {
     const roll: Roll = {
       id: crypto.randomUUID(),
       stockId,
       exposures,
       shotsLeft: exposures,
       createdAt: Date.now(),
+      title: title === undefined ? undefined : normalizeText(title, MAX_TITLE_LENGTH),
     }
     await set(roll.id, roll, this.#rolls)
     return roll
@@ -114,5 +119,32 @@ export class IndexedDbRollRepository implements RollRepository {
       image: new Blob([image], { type: imageType }),
       thumbnail: new Blob([thumbnail], { type: thumbnailType }),
     }))
+  }
+
+  async renameRoll(rollId: string, title: string): Promise<Roll> {
+    const normalized = normalizeText(title, MAX_TITLE_LENGTH)
+    let renamed: Roll | undefined
+    await update<Roll>(
+      rollId,
+      (roll) => {
+        if (!roll) throw new RollNotFoundError(rollId)
+        renamed = { ...roll, title: normalized }
+        return renamed
+      },
+      this.#rolls,
+    )
+    return renamed!
+  }
+
+  async updateCaption(rollId: string, frameNumber: number, caption: string): Promise<void> {
+    const normalized = normalizeText(caption, MAX_CAPTION_LENGTH)
+    await update<StoredFrame>(
+      frameKey(rollId, frameNumber),
+      (frame) => {
+        if (!frame) throw new FrameNotFoundError(rollId, frameNumber)
+        return { ...frame, caption: normalized }
+      },
+      this.#frames,
+    )
   }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { captureSize } from './capture.ts'
+import { captureSize, cropRect } from './capture.ts'
 
 describe('captureSize', () => {
   it('caps the long edge at 3000px and keeps the aspect ratio', () => {
@@ -9,5 +9,17 @@ describe('captureSize', () => {
 
   it('never upscales', () => {
     expect(captureSize(1920, 1080)).toEqual({ width: 1920, height: 1080 })
+  })
+})
+
+describe('cropRect', () => {
+  it('keeps the whole frame for 35mm', () => {
+    expect(cropRect(1920, 1440, 'full')).toEqual({ x: 0, y: 0, width: 1920, height: 1440 })
+  })
+
+  it('takes the centered square for instant prints, in either orientation', () => {
+    expect(cropRect(1920, 1440, 'square')).toEqual({ x: 240, y: 0, width: 1440, height: 1440 })
+    expect(cropRect(1440, 1920, 'square')).toEqual({ x: 0, y: 240, width: 1440, height: 1440 })
+    expect(cropRect(1000, 1000, 'square')).toEqual({ x: 0, y: 0, width: 1000, height: 1000 })
   })
 })

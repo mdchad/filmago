@@ -5,6 +5,7 @@ import { selectActiveRoll, useRollStore } from '../roll/rollStore.ts'
 import { isRollFinished } from '../roll/types.ts'
 import { ContactSheet } from './ContactSheet.tsx'
 import { FilmWindow } from './FilmWindow.tsx'
+import { FormatSwitch } from './FormatSwitch.tsx'
 import { FrameCounter } from './FrameCounter.tsx'
 import { StockPicker } from './StockPicker.tsx'
 import { useEffectiveStock, useTuningStore } from './tuningStore.ts'
@@ -30,7 +31,7 @@ export function CameraScreen({ root, gpuMessage }: CameraScreenProps) {
   const [pickerOpen, setPickerOpen] = useState(false)
 
   const rollStatus = useRollStore((s) => s.status)
-  const roll = useRollStore(selectActiveRoll)
+  const roll = useRollStore(selectActiveRoll('35mm'))
   const loadNewRoll = useRollStore((s) => s.loadNewRoll)
   const stock = useEffectiveStock(roll?.stockId)
   const fullLook = useTuningStore((s) => s.fullLook)
@@ -60,10 +61,10 @@ export function CameraScreen({ root, gpuMessage }: CameraScreenProps) {
       <div className="camera-body">
         <header className="top-plate">
           <div className="wordmark">
-            <span className="engraved wordmark-name">Film Roll</span>
+            <span className="engraved wordmark-name">Filmago</span>
             <span className="engraved wordmark-model">RF·35</span>
           </div>
-          <div className="eyepiece" aria-hidden="true" />
+          <FormatSwitch current="35mm" />
           <FrameCounter roll={roll} />
         </header>
 
@@ -145,6 +146,7 @@ export function CameraScreen({ root, gpuMessage }: CameraScreenProps) {
       {sheetOpen && <ContactSheet initialRollId={roll?.id} onClose={() => setSheetOpen(false)} />}
       {(needsFirstRoll || pickerOpen) && (
         <StockPicker
+          format="35mm"
           onLoad={async (stockId) => {
             await loadNewRoll(stockId)
             setPickerOpen(false)

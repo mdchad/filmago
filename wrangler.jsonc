@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "film-roll",
+  "name": "filmago",
   "compatibility_date": "2026-10-01",
   // Static assets only: the app has no backend yet.
   "assets": {

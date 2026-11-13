@@ -1,4 +1,4 @@
-# Film Roll
+# Filmago
 
 A web camera that shoots like a roll of film: pick a stock, get 24 or 36
 exposures, no retakes. Each frame develops on the GPU (TypeGPU / WebGPU)

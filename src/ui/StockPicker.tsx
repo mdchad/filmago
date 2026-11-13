@@ -1,13 +1,15 @@
 import { useState, type CSSProperties } from 'react'
-import { FILM_STOCKS } from '../film/index.ts'
+import { stocksForFormat, type FilmFormat } from '../film/index.ts'
 import { stockStyle } from './stockStyle.ts'
 
 type StockPickerProps = {
+  format: FilmFormat
   onLoad(stockId: string): Promise<unknown>
   onCancel?: () => void
 }
 
-export function StockPicker({ onLoad, onCancel }: StockPickerProps) {
+export function StockPicker({ format, onLoad, onCancel }: StockPickerProps) {
+  const instant = format === 'instant'
   const [loading, setLoading] = useState<string>()
   const [error, setError] = useState<string>()
 
@@ -26,16 +28,18 @@ export function StockPicker({ onLoad, onCancel }: StockPickerProps) {
     <div className="sheet-backdrop" role="dialog" aria-modal="true" aria-labelledby="stock-picker-title">
       <div className="sheet">
         <header className="sheet-header">
-          <h2 id="stock-picker-title">Load a roll</h2>
+          <h2 id="stock-picker-title">{instant ? 'Load a pack' : 'Load a roll'}</h2>
           {onCancel && (
             <button type="button" className="text-button" onClick={onCancel}>
               Cancel
             </button>
           )}
         </header>
-        <p className="sheet-hint">The stock stays loaded until the last frame.</p>
+        <p className="sheet-hint">
+          {instant ? 'Ten prints. The pack stays loaded until the last one.' : 'The stock stays loaded until the last frame.'}
+        </p>
         <ul className="stock-list">
-          {FILM_STOCKS.map((stock) => {
+          {stocksForFormat(format).map((stock) => {
             const style = stockStyle(stock.id)
             return (
               <li key={stock.id}>
@@ -45,7 +49,7 @@ export function StockPicker({ onLoad, onCancel }: StockPickerProps) {
                   disabled={loading !== undefined}
                   onClick={() => void load(stock.id)}
                 >
-                  <span className="canister" style={{ '--canister': style.color } as CSSProperties}>
+                  <span className={instant ? 'pack' : 'canister'} style={{ '--canister': style.color } as CSSProperties}>
                     <span>{stock.iso}</span>
                   </span>
                   <span className="stock-text">

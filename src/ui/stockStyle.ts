@@ -3,6 +3,8 @@ export const STOCK_STYLE: Record<string, { tagline: string; color: string }> = {
   'marigold-400': { tagline: 'Warm portrait color. Soft contrast, kind to skin.', color: '#e8a23a' },
   'ironside-400': { tagline: 'High-contrast black & white. Deep blacks, coarse grain.', color: '#d9d4c7' },
   'sodium-500t': { tagline: 'Tungsten cinema stock. Cool daylight, red halation.', color: '#d2452f' },
+  'daybreak-instant': { tagline: 'Instant color. Soft and dreamy, cool shadows, creamy highlights.', color: '#7fb5c9' },
+  'ashen-instant': { tagline: 'Instant black & white. Silvery, gentle, a little warm.', color: '#bdb9b0' },
 }
 
 export const stockStyle = (id: string) => STOCK_STYLE[id] ?? { tagline: '', color: '#999' }

@@ -20,4 +20,11 @@ export interface RollRepository {
   saveFrame(frame: NewFrame): Promise<Frame>
   /** The roll's frames ordered by frame number. */
   listFrames(rollId: string): Promise<Frame[]>
+  /** Sets or clears (empty string) a roll's title. Resolves to the updated roll. */
+  renameRoll(rollId: string, title: string): Promise<Roll>
+  /**
+   * Sets or clears (empty string) a saved frame's caption. Unlike shots,
+   * captions can be rewritten any time.
+   */
+  updateCaption(rollId: string, frameNumber: number, caption: string): Promise<void>
 }
